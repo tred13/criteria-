@@ -1,5 +1,8 @@
 name: Render film
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -9,17 +12,19 @@ on:
       end:
         description: frame count (900 = 30 s)
         default: "900"
+      audio:
+        description: mix the voice-over checked into the repo
+        type: boolean
+        default: true
       publish_release:
-        description: upload the MP4 as a release asset
-        default: "true"
-      voiceover_url:
-        description: optional audio URL (mp3/wav) mixed over the film
-        default: ""
+        description: publish the MP4 as a GitHub Release asset
+        type: boolean
+        default: true
 
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -30,23 +35,24 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pillow numpy imageio-ffmpeg
+          pip install -r requirements.txt
 
       - name: Render frames (parallel)
-        run: |
-          python tools/render_par.py ${{ inputs.start }} ${{ inputs.end }}
-
-      - name: Fetch voice-over
-        if: ${{ inputs.voiceover_url != '' }}
-        run: |
-          curl -L "${{ inputs.voiceover_url }}" -o voiceover.mp3
-          ls -lh voiceover.mp3
+        run: python tools/render_par.py "${{ inputs.start }}" "${{ inputs.end }}"
 
       - name: Mux to MP4
         run: |
-          python tools/mux.py --frames frames --out out \
-            ${{ inputs.voiceover_url != '' && '--audio voiceover.mp3' || '' }}
+          if [ "${{ inputs.audio }}" = "true" ]; then
+            python tools/mux.py --frames frames --out out --audio voiceover.mp3
+          else
+            python tools/mux.py --frames frames --out out
+          fi
           ls -lh out
+
+      - name: Probe the master
+        run: |
+          FF=$(python -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())")
+          "$FF" -hide_banner -i out/why-is-the-sky-blue.mp4 2>&1 | grep -E "Duration|Stream" || true
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
@@ -57,17 +63,16 @@ jobs:
           retention-days: 30
 
       - name: Publish release
-        if: ${{ inputs.publish_release == 'true' }}
+        if: ${{ inputs.publish_release }}
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: film-${{ github.run_number }}
         run: |
-          gh release create "$TAG" out/*.mp4 \
+          set -e
+          gh release create "$TAG" out/why-is-the-sky-blue.mp4 out/why-is-the-sky-blue-share.mp4 \
             --repo "${{ github.repository }}" \
             --title "Why Is The Sky Blue — $TAG" \
-            --notes "Automated render: frames ${{ inputs.start }}–${{ inputs.end }} at 30 fps, 1080x1920." \
-            --latest || {
-              gh release upload "$TAG" out/*.mp4 --clobber --repo "${{ github.repository }}";
-            }
+            --notes "1080x1920 · 30 fps · ${GITHUB_RUN_NUMBER} · frames ${{ inputs.start }}–${{ inputs.end }}" \
+            --latest
           gh release view "$TAG" --repo "${{ github.repository }}" --json assets \
             --jq '.assets[] | "\(.name)  \(.size) bytes  \(.url)"'

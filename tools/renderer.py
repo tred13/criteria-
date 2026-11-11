@@ -336,8 +336,8 @@ def shot4(t, lt):
 
     sunny(img, (hip_x, hip_y), unit,
           head="head_open", head_rot=-0.26 + math.sin(t * 1.2) * 0.04,
-          hand_l=(-240, -270 + math.sin(t * 1.9) * 12),
-          hand_r=(240, -270 - math.sin(t * 1.9) * 12),
+          hand_l=(-262, -196 + math.sin(t * 1.9) * 10),
+          hand_r=(262, -196 - math.sin(t * 1.9) * 10),
           foot_l=(-64, rig.SOLE), foot_r=(64, rig.SOLE))
     blob(img, (gl[0], gl[1] - 12), 130, (200, 236, 255), 44, 70)
 
@@ -375,13 +375,13 @@ def shot5(t, lt):
     sunny(img, (hip_x, hip_y), unit,
           head="head_smile", head_rot=0.10 + math.sin(t * 1.1) * 0.04,
           hand_l=(-140, -180 + math.sin(t * 1.4) * 6),
-          hand_r=(146, -262 + math.sin(t * 1.6) * 5),
+          hand_r=(198, -286 + math.sin(t * 1.6) * 6),
           foot_l=(-66, rig.SOLE), foot_r=(66, rig.SOLE),
           hip_dy=math.sin(t * 1.7) * 4, pack_rot=-0.09)
     img.alpha_composite(Image.new("RGBA", img.size, (255, 146, 86, 40)))
 
     banner(img, "sunset", t, 0.85)
-    return camera(img, 1.03 + 0.05 * S.eio(S.seg(t, 0, 5.0)), W * 0.5, H * 0.54)
+    return camera(img, 1.01 + 0.04 * S.eio(S.seg(t, 0, 5.0)), W * 0.5, H * 0.56)
 
 
 # ================================================================ SHOT 6 — payoff
