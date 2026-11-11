@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="460" viewBox="0 0 460 460">
+  <g id="sun" data-pivot="230,230">
+    <line x1="380.0" y1="230.0" x2="435.0" y2="230.0" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="435.0" cy="230.0" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="359.9" y1="305.0" x2="407.5" y2="332.5" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="407.5" cy="332.5" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="305.0" y1="359.9" x2="332.5" y2="407.5" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="332.5" cy="407.5" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="230.0" y1="380.0" x2="230.0" y2="435.0" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="230.0" cy="435.0" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="155.0" y1="359.9" x2="127.5" y2="407.5" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="127.5" cy="407.5" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="100.1" y1="305.0" x2="52.5" y2="332.5" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="52.5" cy="332.5" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="80.0" y1="230.0" x2="25.0" y2="230.0" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="25.0" cy="230.0" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="100.1" y1="155.0" x2="52.5" y2="127.5" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="52.5" cy="127.5" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="155.0" y1="100.1" x2="127.5" y2="52.5" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="127.5" cy="52.5" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="230.0" y1="80.0" x2="230.0" y2="25.0" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="230.0" cy="25.0" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="305.0" y1="100.1" x2="332.5" y2="52.5" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="332.5" cy="52.5" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <line x1="359.9" y1="155.0" x2="407.5" y2="127.5" stroke="#f0a810" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="407.5" cy="127.5" r="17" fill="#f0a810" stroke="#1a1b26" stroke-width="4"/>
+    <circle cx="230.0" cy="230.0" r="156" fill="#ffcd29" stroke="#1a1b26" stroke-width="7"/>
+    <circle cx="256.0" cy="270.0" r="152" fill="#f0a810" opacity="0.55"/>
+    <circle cx="184.0" cy="176.0" r="74" fill="#ffeea0" opacity="0.85"/>
+    <path d="M168.0 256.0 q 24 24 48 0" fill="none" stroke="#1a1b26" stroke-width="7" stroke-linecap="round"/>
+    <path d="M244.0 256.0 q 24 24 48 0" fill="none" stroke="#1a1b26" stroke-width="7" stroke-linecap="round"/>
+    <ellipse cx="188.0" cy="273.0" rx="20" ry="13" fill="#ff8d85" opacity="0.55"/>
+    <ellipse cx="272.0" cy="273.0" rx="20" ry="13" fill="#ff8d85" opacity="0.55"/>
+  </g>
+</svg>
