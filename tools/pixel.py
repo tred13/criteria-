@@ -379,7 +379,7 @@ def draw_heart(full=True):
 
 
 # ------------------------------------------------------------------ parallax
-def draw_sky(w=320, h=180):
+def draw_sky(w=480, h=270):
     c = Pix(w, h)
     for y in range(h):
         t = y / (h - 1)
@@ -396,18 +396,18 @@ def draw_sky(w=320, h=180):
             p = c.get(x, y)
             c.set(x, y, tuple(max(0, v - 4) for v in p[:3]))
     # sun
-    c.disc(258, 40, 16, (255, 224, 120))
-    c.disc(258, 40, 12, (255, 244, 180))
+    c.disc(388, 62, 22, (255, 224, 120))
+    c.disc(388, 62, 17, (255, 244, 180))
     for i in range(8):
         a = math.pi * 2 * i / 8
-        c.set(round(258 + math.cos(a) * 20), round(40 + math.sin(a) * 20), (255, 236, 150))
+        c.set(round(388 + math.cos(a) * 28), round(62 + math.sin(a) * 28), (255, 236, 150))
     return c
 
 
-def draw_hills(w=320, h=180, far=True):
+def draw_hills(w=480, h=270, far=True):
     c = Pix(w, h)
     col = (120, 176, 208) if far else (86, 158, 128)
-    base = 118 if far else 140
+    base = 176 if far else 206
     for x in range(w):
         y = base + int(14 * math.sin(x / 46.0 + (0.0 if far else 2.0)) +
                        8 * math.sin(x / 17.0))
@@ -419,9 +419,9 @@ def draw_hills(w=320, h=180, far=True):
     return c
 
 
-def draw_clouds(w=320, h=180):
+def draw_clouds(w=480, h=270):
     c = Pix(w, h)
-    for (cx, cy, s) in ((40, 46, 1.0), (150, 30, 0.8), (250, 62, 0.6), (300, 40, 0.9)):
+    for (cx, cy, s) in ((60, 70, 1.3), (220, 44, 1.0), (370, 92, 0.8), (450, 60, 1.1)):
         rx, ry = 18 * s, 8 * s
         c.ellipse(cx, cy, rx, ry, WHITE)
         c.ellipse(cx - rx * 0.6, cy + 2, rx * 0.55, ry * 0.8, WHITE)
@@ -460,9 +460,9 @@ def write_sheets():
     props.save(os.path.join(OUT, "props.png"))
 
     draw_sky().image().save(os.path.join(OUT, "bg_sky.png"))
-    draw_hills(320, 180, True).image().save(os.path.join(OUT, "bg_hills_far.png"))
-    draw_hills(320, 180, False).image().save(os.path.join(OUT, "bg_hills_near.png"))
-    draw_clouds(320, 180).image().save(os.path.join(OUT, "bg_clouds.png"))
+    draw_hills(480, 270, True).image().save(os.path.join(OUT, "bg_hills_far.png"))
+    draw_hills(480, 270, False).image().save(os.path.join(OUT, "bg_hills_near.png"))
+    draw_clouds(480, 270).image().save(os.path.join(OUT, "bg_clouds.png"))
     return sheet
 
 

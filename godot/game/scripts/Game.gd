@@ -34,6 +34,7 @@ var hud: Label
 var banner: Label
 var tint: ColorRect
 var pickups: AudioStreamPlayer
+var bg_layers: Array = []
 
 # --------------------------------------------------------- level data
 # '#' ground, '=' platform, 'o' orb, '^' spike, 'P' start
@@ -102,53 +103,22 @@ func _build_background() -> void:
 	layer.z_index = -20
 	add_child(layer)
 
-	# tiled sky
-	for i in 4:
-		var s := Sprite2D.new()
-		s.texture = _tex("res://assets/bg_sky.png")
-		s.centered = false
-		s.region_enabled = false
-		s.position = Vector2(i * 320, 0)
-		s.scale = Vector2(0.75, 0.75)
-		layer.add_child(s)
-
-	# parallax hills + clouds drawn as horizontal repeats
-	var far := Node2D.new()
-	far.z_index = -18
-	add_child(far)
-	for i in 4:
-		var s := Sprite2D.new()
-		s.texture = _tex("res://assets/bg_hills_far.png")
-		s.centered = false
-		s.position = Vector2(i * 320, 0)
-		s.scale = Vector2(0.75, 0.75)
-		s.set_meta("parallax", 0.25)
-		far.add_child(s)
-	set_meta("far", far)
-
-	var near := Node2D.new()
-	near.z_index = -16
-	add_child(near)
-	for i in 4:
-		var s := Sprite2D.new()
-		s.texture = _tex("res://assets/bg_hills_near.png")
-		s.centered = false
-		s.position = Vector2(i * 320, 0)
-		s.scale = Vector2(0.75, 0.75)
-		near.add_child(s)
-	set_meta("near", near)
-
-	var clouds := Node2D.new()
-	clouds.z_index = -17
-	add_child(clouds)
-	for i in 4:
-		var s := Sprite2D.new()
-		s.texture = _tex("res://assets/bg_clouds.png")
-		s.centered = false
-		s.position = Vector2(i * 320, 0)
-		s.scale = Vector2(0.75, 0.75)
-		clouds.add_child(s)
-	set_meta("clouds", clouds)
+	# sky, hills and clouds are 480x270 layers drawn at 2x with an overscan
+	for spec in [["bg_sky", -20, 0.15], ["bg_clouds", -18, 0.30],
+				 ["bg_hills_far", -16, 0.40], ["bg_hills_near", -14, 0.55]]:
+		var n := Node2D.new()
+		n.z_index = spec[1]
+		n.set_meta("parallax", spec[2])
+		add_child(n)
+		for i in 5:
+			var sp := Sprite2D.new()
+			sp.texture = _tex("res://assets/%s.png" % spec[0])
+			sp.centered = false
+			sp.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			sp.scale = Vector2(2, 2)
+			sp.position = Vector2(i * 960 - 960, -20)
+			n.add_child(sp)
+		bg_layers.append(n)
 
 func _build_tiles() -> void:
 	var body := StaticBody2D.new()
@@ -310,19 +280,33 @@ func _hold_right() -> bool:
 
 
 func _auto_dir() -> int:
-	# seek the nearest orb that is above and ahead, otherwise run right
-	if player == null or orbs.is_empty():
+	if player == null:
 		return 1
-	var best: Sprite2D = null
-	var bd := 1e9
-	for o in orbs:
-		var d: float = abs(o.position.x - player.position.x)
-		if d < bd:
-			bd = d
-			best = o
-	if best == null:
+	var px: float = player.position.x
+	# walk to the nearest orb
+	if not orbs.is_empty():
+		var best: Sprite2D = orbs[0]
+		var bd := 1e9
+		for o in orbs:
+			var d: float = abs(o.position.x - px)
+			if d < bd:
+				bd = d
+				best = o
+		if bd > 10.0:
+			return 1 if best.position.x > px else -1
+	# nothing nearby: head right, but stop before the pit at column 26
+	if px > 26 * TILE - 40 and px < 30 * TILE:
+		if player.is_on_floor() and _ground_ahead():
+			return 1
 		return 1
-	return 1 if best.position.x >= player.position.x - 6 else -1
+	return 1
+
+
+func _ground_ahead() -> bool:
+	var probe := PhysicsPointQueryParameters2D.new()
+	probe.position = player.position + Vector2(16 * facing, 24)
+	probe.collision_mask = 1
+	return not get_world_2d().direct_space_state.intersect_point(probe).is_empty()
 
 
 func _auto_jump() -> bool:
@@ -338,6 +322,7 @@ func _auto_jump() -> bool:
 	var probe := PhysicsPointQueryParameters2D.new()
 	probe.position = ahead
 	probe.collision_mask = 1
+	probe.collide_with_bodies = true
 	var hits := get_world_2d().direct_space_state.intersect_point(probe)
 	if hits.is_empty():
 		return true
@@ -364,19 +349,24 @@ func _physics_process(delta: float) -> void:
 func _follow_camera() -> void:
 	if cam == null or player == null:
 		return
-	var want := Vector2(clamp(player.position.x + 40 * facing, 480, width * TILE - 480),
-						clamp(player.position.y - 40, 270, height * TILE - 270))
-	cam.position = cam.position.lerp(want, 0.12)
+	cam.zoom = Vector2(0.7, 0.7)
+	var half := Vector2(480 / 0.7, 270 / 0.7)
+	var want := Vector2(
+		clamp(player.position.x + 30 * facing, half.x, width * TILE - half.x),
+		clamp(player.position.y - 30, half.y, height * TILE - half.y))
+	cam.position = cam.position.lerp(want, 0.1)
 
 
 func _parallax() -> void:
-	var cx := cam.position.x
-	for key in ["far", "near", "clouds"]:
-		var n: Node2D = get_meta(key)
-		var k := 0.25 if key == "far" else (0.45 if key == "clouds" else 0.6)
+	if cam == null:
+		return
+	var cx: float = cam.position.x - 480.0
+	for n in bg_layers:
+		var k: float = n.get_meta("parallax", 0.4)
 		for c in n.get_children():
 			var sp: Sprite2D = c
-			sp.position.x = c.get_index() * 320 * 0.75 - cx * k
+			sp.position.x = c.get_index() * 960 - 960 - cx * k
+
 
 func _move_player(delta: float) -> void:
 	var v := player.velocity
