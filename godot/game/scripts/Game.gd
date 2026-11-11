@@ -10,6 +10,7 @@ extends Node2D
 # ============================================================
 
 const TILE := 16
+const ZOOM := 0.95
 const GRAVITY := 900.0
 const RUN_SPEED := 132.0
 const JUMP_V := -380.0
@@ -54,9 +55,9 @@ const LEVEL := [
 "...=====..........=====...............=====.....",
 "..P.............o.=====...............=====..o..",
 ".................^^.............................",
-"##########################..####################",
-"##########################..####################",
-"##########################..####################",
+"################################################",
+"################################################",
+"################################################",
 ]
 
 var width := 48
@@ -349,11 +350,11 @@ func _physics_process(delta: float) -> void:
 func _follow_camera() -> void:
 	if cam == null or player == null:
 		return
-	cam.zoom = Vector2(0.7, 0.7)
-	var half := Vector2(480 / 0.7, 270 / 0.7)
+	cam.zoom = Vector2(ZOOM, ZOOM)
+	var half := Vector2(480 / ZOOM, 270 / ZOOM)
 	var want := Vector2(
 		clamp(player.position.x + 30 * facing, half.x, width * TILE - half.x),
-		clamp(player.position.y - 30, half.y, height * TILE - half.y))
+		height * TILE - half.y)
 	cam.position = cam.position.lerp(want, 0.1)
 
 
