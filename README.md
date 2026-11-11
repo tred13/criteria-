@@ -14,6 +14,20 @@ vector art, six composed shots, and a frame-accurate compositor.
 
 ---
 
+## The game — RAYLEIGH RUN
+
+`godot/game/` is a playable 2D pixel platformer (Godot 4.4): collect the light
+orbs before the sun sets. Art is real pixel art authored pixel-by-pixel in
+`tools/pixel.py`, with editable Pixelorama projects in `art/pixelorama/`.
+The `Game check` workflow boots the game headless, then captures gameplay under
+Xvfb and publishes it as a release asset.
+
+| | |
+|---|---|
+| Input | ← → / A D run · Space / ↑ / W jump · R restart |
+| Art | 32×32 hero, 16×16 tiles, 18-colour palette, nearest-neighbour |
+| Docs | [`docs/GAME.md`](docs/GAME.md) |
+
 ## Where the video comes from
 
 **Rendering happens on GitHub, not in any agent sandbox.** The
