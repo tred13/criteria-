@@ -201,7 +201,7 @@ func _build_player() -> void:
 			frames.add_frame(anim[0], at)
 	spr.sprite_frames = frames
 	spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	spr.position = Vector2(0, -6)
+	spr.position = Vector2(0, -14)
 	spr.play("idle")
 	player.add_child(spr)
 
@@ -330,6 +330,18 @@ func _auto_jump() -> bool:
 	return false
 
 # --------------------------------------------------------- loop
+func _draw() -> void:
+	# a subtle marker under the kid keeps him readable in tiny captures
+	if player == null:
+		return
+	draw_rect(Rect2(player.position + Vector2(-7, 12), Vector2(14, 3)),
+			  Color(0.05, 0.06, 0.12, 0.55), true)
+
+
+func _process(_delta: float) -> void:
+	queue_redraw()
+
+
 func _physics_process(delta: float) -> void:
 	t += delta
 	_parallax()
@@ -354,7 +366,7 @@ func _follow_camera() -> void:
 	var half := Vector2(480 / ZOOM, 270 / ZOOM)
 	var want := Vector2(
 		clamp(player.position.x + 30 * facing, half.x, width * TILE - half.x),
-		height * TILE - half.y)
+		clamp(player.position.y - 10, half.y, height * TILE - half.y))
 	cam.position = cam.position.lerp(want, 0.1)
 
 
