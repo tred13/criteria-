@@ -143,7 +143,7 @@ def shot1(t, lt):
 
     unit = 1.78
     walk = S.seg(t, 0.15, 2.45)
-    hip_x = 120 + (440 - 120) * S.eo(walk)
+    hip_x = 205 + (440 - 205) * S.eo(walk)
     hip_y = GROUND - rig.SOLE * unit
     kw = dict(head="head_smile")
     if walk < 1.0:
@@ -185,15 +185,15 @@ def shot1(t, lt):
         d.text((bx + 8, by + 10), "?", font=f, fill=(12, 16, 40, 90), anchor="mm")
         d.text((bx, by), "?", font=f, fill=(255, 210, 46, 255), anchor="mm",
                stroke_width=18, stroke_fill=(255, 255, 255, 255))
-        lay = lay.rotate(0)  # no-op keeps the alpha channel
         k = max(0.02, qk)
-        z = lay.resize((int(W * k), int(H * k)), Image.LANCZOS)
-        img.alpha_composite(z, (int(bx * (1 - k)), int(by * (1 - k))))
+        z = lay.resize((max(1, int(W * k)), max(1, int(H * k))), Image.LANCZOS)
+        img.alpha_composite(z, (int(bx - bx * k), int(by - by * k)))
 
     tk = S.back(S.seg(t, 1.2, 1.75))
     if tk > 0.02:
-        ti = A["title"].resize((max(1, int(A["title"].width * tk)),
-                                max(1, int(A["title"].height * tk))), Image.LANCZOS)
+        kt = 0.92 + 0.08 * min(1.0, tk)      # settle at exactly 1.0
+        ti = A["title"].resize((max(1, int(A["title"].width * kt)),
+                                max(1, int(A["title"].height * kt))), Image.LANCZOS)
         img.alpha_composite(ti, (int((W - ti.width) / 2), int(190 - ti.height / 2)))
 
     # sun smiles wider as he points
