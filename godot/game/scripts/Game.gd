@@ -37,27 +37,37 @@ var pickups: AudioStreamPlayer
 
 # --------------------------------------------------------- level data
 # '#' ground, '=' platform, 'o' orb, '^' spike, 'P' start
-const LEVEL := [
-	"................................................",
-	"................................................",
-	"..............o.........o.......................",
-	"..........#####.......#####.....................o",
-	"................................................",
-	"......o..............................o..........",
-	"....#####.............^^^........#####..........",
-	"................................................",
-	"..o...........................o.................",
-	"#####.......................#####...............",
-	"##########################.#####################",
-	"##########################.#####################",
-]
+	const LEVEL := [
+		"................................................",
+		"................................................",
+		"................................................",
+		"...................................o............",
+		".........................o......................",
+		".................................=====..........",
+		".......................====......=====..........",
+		".............o.........====.....................",
+		"...............................o................",
+		"...........=====................................",
+		".....o.....=====....o........=====......o.......",
+		".............................=====..............",
+		"...=====..........=====...............=====.....",
+		"..P=====........o.=====...............=====..o..",
+		".................^^.............................",
+		"##########################..####################",
+		"##########################..####################",
+		"##########################..####################",
+	]
 
 var width := 48
-var height := 12
+var height := 18
 
 # --------------------------------------------------------- build
 func _ready() -> void:
 	randomize()
+	autopilot = OS.has_feature("editor") and false
+	for a in OS.get_cmdline_user_args():
+		if a == "--autopilot":
+			autopilot = true
 	_build_background()
 	_build_tiles()
 	_build_player()
@@ -285,15 +295,59 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_R and state != "play":
 			get_tree().reload_current_scene()
 
+var autopilot := false
+var _auto_t := 0.0
+
+
 func _hold_left() -> bool:
+	if autopilot:
+		return _auto_dir() < 0
 	return Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_A)
 func _hold_right() -> bool:
+	if autopilot:
+		return _auto_dir() > 0
 	return Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)
+
+
+func _auto_dir() -> int:
+	# seek the nearest orb that is above and ahead, otherwise run right
+	if player == null or orbs.is_empty():
+		return 1
+	var best: Sprite2D = null
+	var bd := 1e9
+	for o in orbs:
+		var d: float = abs(o.position.x - player.position.x)
+		if d < bd:
+			bd = d
+			best = o
+	if best == null:
+		return 1
+	return 1 if best.position.x >= player.position.x - 6 else -1
+
+
+func _auto_jump() -> bool:
+	if not autopilot:
+		return Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_UP) or Input.is_key_pressed(KEY_W)
+	if player == null or not player.is_on_floor():
+		return true
+	# jump when an orb sits above, or a wall/edge is close
+	for o in orbs:
+		if abs(o.position.x - player.position.x) < 46 and o.position.y < player.position.y - 14:
+			return true
+	var ahead := Vector2(player.position.x + 18 * facing, player.position.y + 26)
+	var probe := PhysicsPointQueryParameters2D.new()
+	probe.position = ahead
+	probe.collision_mask = 1
+	var hits := get_world_2d().direct_space_state.intersect_point(probe)
+	if hits.is_empty():
+		return true
+	return false
 
 # --------------------------------------------------------- loop
 func _physics_process(delta: float) -> void:
 	t += delta
 	_parallax()
+	_follow_camera()
 
 	if state == "play":
 		time_left = max(0.0, time_left - delta)
@@ -306,6 +360,14 @@ func _physics_process(delta: float) -> void:
 			_lose()
 
 	hud.text = "ORBS  %d      TIME  %02d      LIVES  %d" % [score, int(ceil(time_left)), lives]
+
+func _follow_camera() -> void:
+	if cam == null or player == null:
+		return
+	var want := Vector2(clamp(player.position.x + 40 * facing, 480, width * TILE - 480),
+						clamp(player.position.y - 40, 270, height * TILE - 270))
+	cam.position = cam.position.lerp(want, 0.12)
+
 
 func _parallax() -> void:
 	var cx := cam.position.x
@@ -333,6 +395,8 @@ func _move_player(delta: float) -> void:
 	else:
 		coyote = max(0.0, coyote - delta)
 	buffer = max(0.0, buffer - delta)
+	if autopilot and _auto_jump() and coyote > 0.0:
+		buffer = JUMP_BUFFER
 	if buffer > 0.0 and coyote > 0.0:
 		v.y = JUMP_V
 		buffer = 0.0
@@ -340,7 +404,7 @@ func _move_player(delta: float) -> void:
 		_sfx(660.0, 0.09)
 
 	# variable jump height
-	if v.y < 0 and not (Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_UP) or Input.is_key_pressed(KEY_W)):
+	if v.y < 0 and not _auto_jump():
 		v.y += 1100.0 * delta
 
 	player.velocity = v

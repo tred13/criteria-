@@ -37,7 +37,7 @@ jobs:
         working-directory: godot/game
         run: |
           set +e
-          timeout 25 godot --headless --path . --quit-after 180 2>&1 | tee /tmp/boot.log
+          timeout 30 godot --headless --path . --quit-after 240 -- --autopilot 2>&1 | tee /tmp/boot.log
           grep -qiE "SCRIPT ERROR|Parse Error|Invalid call|Cannot open" /tmp/boot.log && { echo "GAME FAILED"; exit 1; }
           echo "boot clean"
 
@@ -48,7 +48,7 @@ jobs:
           Xvfb :99 -screen 0 960x540x24 &
           sleep 2
           export DISPLAY=:99
-          godot --path . --resolution 960x540 &
+          godot --path . --resolution 960x540 -- --autopilot &
           GPID=$!
           sleep 3
           ffmpeg -y -loglevel error -f x11grab -video_size 960x540 -framerate 30 \
