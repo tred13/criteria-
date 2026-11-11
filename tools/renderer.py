@@ -456,5 +456,5 @@ if __name__ == "__main__":
     import sys
     s = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     e = int(sys.argv[2]) if len(sys.argv) > 2 else TOTAL
-    o = sys.argv[3] if len(sys.argv) > 3 else os.path.join(HERE, "..", "..", "frames")
+    o = sys.argv[3] if len(sys.argv) > 3 else os.path.join(HERE, "..", "frames")
     main(o, s, e)

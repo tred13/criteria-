@@ -1,14 +1,24 @@
-# RENDER POLICY — HARD RULE
+# RENDER POLICY — where rendering is allowed
 
-**No rendering. No frame generation. No video export. Ever.**
+## Hard rules
 
-This project is delivered as editable source only:
+1. **Never render inside the agent sandbox.** No frame generation, no
+   `renderer.py`, no ffmpeg, no export of any image sequence or video in the
+   assistant's workspace. That environment is for authoring source only.
+2. **All rendering happens on GitHub.** The single supported path is the
+   `Render film` GitHub Actions workflow (`.github/workflows/render.yml`),
+   triggered with `workflow_dispatch`, which renders the frames, muxes the
+   audio and publishes the finished MP4 as a release asset.
+3. **All deliverables live on GitHub.** Source, assets, docs, the rendered
+   video and the release all live in this repository on branch `main`.
+   Google Drive holds nothing but a pointer back to GitHub.
 
-* vector masters (`art/svg/`)
-* rig + animation code (`tools/`, `godot/`)
-* documentation (`docs/`)
+Trigger a render:
 
-Any agent or contributor working on this repository must **not** run
-`renderer.py`, `render_par.py`, `mux.py`, `godot --export`, ffmpeg, or any
-other frame/video generation step. Exporting is the user's decision on the
-user's own machine.
+```bash
+curl -X POST \
+  -H "Authorization: token $TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/tred13/criteria-/actions/workflows/render.yml/dispatches \
+  -d '{"ref":"main","inputs":{"start":"0","end":"900","publish_release":"true"}}'
+```

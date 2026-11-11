@@ -1,36 +1,51 @@
-"""tools/mux.py — assemble frames + voice-over into the delivery MP4s."""
+"""tools/mux.py — assemble frames + optional audio into the delivery MP4s.
+
+Runs on GitHub Actions (see .github/workflows/render.yml). Never in the agent sandbox.
+"""
+import argparse
+import glob
 import os
 import subprocess
-import sys
 
 import imageio_ffmpeg
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-FRAMES = os.path.join(ROOT, "frames")
-VO = os.path.join(ROOT, "voiceover.mp3")
-OUT = os.path.join(HERE, "..", "render")
-
 FF = imageio_ffmpeg.get_ffmpeg_exe()
-os.makedirs(OUT, exist_ok=True)
 
 
-def run(args):
-    print(" ".join(args[:6]), "...")
-    subprocess.run(args, check=True)
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--frames", default="frames", help="folder holding f0000.png ...")
+    ap.add_argument("--out", default="out", help="output folder")
+    ap.add_argument("--audio", default=None, help="optional voice-over file")
+    ap.add_argument("--fps", type=int, default=30)
+    ap.add_argument("--size", default="1080x1920")
+    a = ap.parse_args()
+
+    os.makedirs(a.out, exist_ok=True)
+    first = sorted(glob.glob(os.path.join(a.frames, "f*.png")))[0]
+    pattern = os.path.join(a.frames, "f%04d.png") if "%04d" in first.replace("f0000", "f%04d") \
+        else os.path.join(a.frames, "f%04d.png")
+
+    master = os.path.join(a.out, "why-is-the-sky-blue.mp4")
+    share = os.path.join(a.out, "why-is-the-sky-blue-share.mp4")
+    dur = str(len(glob.glob(os.path.join(a.frames, "f*.png"))) / float(a.fps))
+
+    cmd = [FF, "-y", "-loglevel", "warning", "-framerate", str(a.fps), "-i", pattern]
+    if a.audio:
+        cmd += ["-i", a.audio, "-c:a", "aac", "-b:a", "160k", "-shortest"]
+    cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
+            "-preset", "medium", "-t", dur, master]
+    subprocess.run(cmd, check=True)
+
+    w, h = a.size.split("x")
+    subprocess.run([FF, "-y", "-loglevel", "warning", "-i", master,
+                    "-vf", "scale=%d:%d" % (int(w) // 2 * 1, int(h) // 2 * 1),
+                    "-c:v", "libx264", "-crf", "24", "-preset", "medium",
+                    "-c:a", "aac", "-b:a", "128k", share], check=True)
+
+    for f in (master, share):
+        print(f, round(os.path.getsize(f) / 1e6, 2), "MB")
 
 
-master = os.path.join(OUT, "why-is-the-sky-blue.mp4")
-share = os.path.join(OUT, "why-is-the-sky-blue-share.mp4")
-
-run([FF, "-y", "-loglevel", "warning", "-framerate", "30",
-     "-i", os.path.join(FRAMES, "f%04d.png"), "-i", VO,
-     "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "medium",
-     "-c:a", "aac", "-b:a", "160k", "-t", "30", master])
-
-run([FF, "-y", "-loglevel", "warning", "-i", master, "-vf", "scale=720:1280",
-     "-c:v", "libx264", "-crf", "24", "-preset", "medium",
-     "-c:a", "aac", "-b:a", "128k", share])
-
-for f in (master, share):
-    print(f, round(os.path.getsize(f) / 1e6, 1), "MB")
+if __name__ == "__main__":
+    main()

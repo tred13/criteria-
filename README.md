@@ -14,11 +14,19 @@ vector art, six composed shots, and a frame-accurate compositor.
 
 ---
 
-## Delivery: source only (no render)
+## Where the video comes from
 
-**This repository contains no rendered video by design.** It ships as an
-editable production package — vector art, rig, animation code and docs — so the
-final video can be produced wherever you want it, by you. See `RENDER_POLICY.md`.
+**Rendering happens on GitHub, not in any agent sandbox.** The
+[`Render film`](.github/workflows/render.yml) workflow renders all 900 frames,
+mixes the voice-over and publishes `why-is-the-sky-blue.mp4` as a GitHub
+Release asset. Everything — source, assets, docs, the film — lives in this
+repository. See `RENDER_POLICY.md`.
+
+```bash
+curl -X POST -H "Authorization: token $TOKEN" -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/tred13/criteria-/actions/workflows/render.yml/dispatches \
+  -d '{"ref":"main","inputs":{"start":"0","end":"900"}}'
+```
 
 ---
 
@@ -66,9 +74,8 @@ render/             final video files
 
 ## Using the package
 
-Nothing is pre-exported. Edit the vectors in `art/svg/`, or open the Godot
-project and animate the rig live. Exporting frames or video is **not** part of
-this deliverable and must not be automated here.
+Edit the vectors in `art/svg/`, pose the rig with `tools/rig.py`, or open the
+Godot project and animate live. Rendering is a GitHub Action — see above.
 
 The Godot project is live: open `godot/project.godot` in Godot 3.6 and press
 Play — `SunnyRig.gd` rebuilds the skeleton from `assets/rig_pivots.json` and
