@@ -32,7 +32,10 @@ def main():
 
     cmd = [FF, "-y", "-loglevel", "warning", "-framerate", str(a.fps), "-i", pattern]
     if a.audio:
-        cmd += ["-i", a.audio, "-c:a", "aac", "-b:a", "160k", "-shortest"]
+        # pad the narration with silence so the film keeps its full length
+        cmd += ["-i", a.audio,
+                "-filter_complex", "[1:a]apad[a]", "-map", "0:v", "-map", "[a]",
+                "-c:a", "aac", "-b:a", "160k"]
     cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
             "-preset", "medium", "-t", dur, master]
     subprocess.run(cmd, check=True)
