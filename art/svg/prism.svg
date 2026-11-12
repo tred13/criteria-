@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="220" viewBox="0 0 240 220">
-  <g id="prism" data-pivot="120,190">
-<path d="M120 20 L 222 196 L 18 196 Z" fill="#baeaff" opacity="0.92" stroke="#1a1b26" stroke-width="6"/>
-    <path d="M120 20 L 120 196 L 18 196 Z" fill="#ffffff" opacity="0.45"/>
-    <path d="M60 120 L 150 70" stroke="#ffffff" stroke-width="6" opacity="0.6"/>
-  </g>
-</svg>
